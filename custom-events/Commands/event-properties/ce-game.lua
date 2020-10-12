@@ -9,6 +9,7 @@
 {{$id := 5009}}
 {{$eventID := $args.Get 0}}
 {{$ownerID := .User.ID}}
+{{$aliasID := 4996}}
 {{$key := (joinStr "_" $eventID $ownerID)}}
 
 {{$content := (joinStr " " (slice .CmdArgs 1))}}
@@ -22,12 +23,13 @@
     {{$ownerID = $eventExists.Value}}
 {{end}}
 
-{{$gameExists := dbGet 4990 $content}}
-{{$gameRoles := dbGet 4994 $content}}
-
 {{if and (not (eq (toInt64 $eventExists.Value) 0)) (eq $hasCorrectPerms "allowed")}}
+    {{$game := (index (dbGetPattern $aliasID (joinStr "" "%" $content) 1 0) 0).Value}}
+    {{$gameExists := dbGet 4990 $game}}
+    {{$gameRoles := dbGet 4994 $game}}
+
     {{if gt (len (str $gameExists.ID)) 0}}
-        {{dbSet $id $key $content}}
+        {{dbSet $id $key $game}}
         {{$publishedEvent := dbGet 5001 (joinStr "_" $eventID $ownerID)}}
 
         {{if gt (len (str $publishedEvent.ID)) 0}}
@@ -38,9 +40,9 @@
 
             {{execCC $publishEventCustomCommandID nil 0 (sdict "creatorID" $ownerID "eventID" $eventID )}}
         {{end}}
-        {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventExists.Value "`\n**Game:**\n```" $content "\n```")}}
+        {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventExists.Value "`\n**Game:**\n```" $content " [" $game "]\n```")}}
     {{else}}
-        {{sendDM (joinStr "" "Game type " $content " does not exist. See all available games with `-ce-game-list`")}}
+        {{sendDM (joinStr "" "Game type " $content " [" $game "] does not exist. See all available games with `-ce-game-list`")}}
     {{end}}
 {{else}}
     {{sendDM $failedAccessMsg}}

@@ -5,7 +5,7 @@
 
 {{$gameID := 4990}}
 {{$linkGameToRoleID := 4994}}
-{{($game := $args.Get 0)}}
+{{$game := $args.Get 0}}
 {{$rolesToAdd := (slice .CmdArgs 1)}}
 {{$availableRolesDB := dbGetPattern 4991 "%" 100 0}}
 {{$availableRoles := ""}}
