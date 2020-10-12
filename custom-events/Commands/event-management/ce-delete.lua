@@ -14,7 +14,7 @@
 {{if and (not (eq (toInt64 $eventExists.Value) 0)) (eq $hasCorrectPerms "allowed")}}
     {{$eventID := $eventExists.Key}}
     {{$creatorID := $eventExists.Value}}
-    {{dbDel 4999 str $eventID}}
+    {{dbDel 4999 $eventID}}
     {{dbDel 5000 (joinStr "_" $eventID $creatorID)}}
     {{dbDel 5001 (joinStr "_" $eventID $creatorID)}}
     {{dbDel 5002 (joinStr "_" $eventID $creatorID)}}
