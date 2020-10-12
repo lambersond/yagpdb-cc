@@ -2,16 +2,16 @@
     (carg "string" "role")
 }}
 
-{{$id := 4991}}
+{{$roleID := 4991}}
 {{$role := ($args.Get 0)}}
-{{$key := (joinStr "" "role_" $role)}}
+{{$key := $role}}
 
-{{$roleExists := (dbGet $id $key)}}
+{{$roleExists := (dbGet $roleID $key)}}
 {{$failedAccessMsg :=  (joinStr "" "A role with **NAME:** `" $role "` ___does not exist___ **or** you ___cannot delete " $role "___.")}}
 {{$organizerID := (toInt64 (dbGet 4999 "organizerID").Value)}}
 
 {{if hasRoleID $organizerID}}
-    {{dbDel $id $key}}
+    {{dbDel $roleID $key}}
     {{sendDM (joinStr "" "\nRole Deleted!\n\n**Role Name:** `" $role "`" )}}
 {{else}}
     {{sendDM $failedAccessMsg}}

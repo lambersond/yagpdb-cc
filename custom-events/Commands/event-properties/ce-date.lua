@@ -52,9 +52,9 @@
             {{dbSet $id $key $content}}
             {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventExists.Value "`\n**Date:**\n```" $content "\n```")}}
 
-            {{$publishedEvent = dbGet 5001 (joinStr "_" $eventID $ownerID)}}
+            {{$publishedEvent := dbGet 5001 (joinStr "_" $eventID $ownerID)}}
             {{if gt (len (str $publishedEvent.ID)) 0}}
-                {{execCC $publishEventCustomCommandID nil 0 (sdict "creatorID" $creatorID "eventID" $eventID )}}
+                {{execCC $publishEventCustomCommandID nil 0 (sdict "creatorID" $ownerID "eventID" $eventID )}}
             {{end}}
         {{else}}
             {{sendDM $failedAccessMsg}}

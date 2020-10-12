@@ -22,22 +22,21 @@
     {{$ownerID = $eventExists.Value}}
 {{end}}
 
-{{$gameExists := (dbGet 4990 (joinStr "" "game_" $content)).Key}}
-{{$gameRoles := (dbGet 4990 $content )}}
+{{$gameExists := dbGet 4990 $content}}
+{{$gameRoles := dbGet 4994 $content}}
 
 {{if and (not (eq (toInt64 $eventExists.Value) 0)) (eq $hasCorrectPerms "allowed")}}
-    {{ if eq (str $gameExists) (joinStr "" "game_" $content)}}
+    {{if gt (len (str $gameExists.ID)) 0}}
         {{dbSet $id $key $content}}
-        {{if gt (len (str $gameRoles.ID)) 0}}
-            {{dbSet (sub $id 1) (joinStr "_" $eventID $ownerID) $gameRoles.Value}}
-            {{$publishedEvent = dbGet 5001 (joinStr "_" $eventID $ownerID)}}
+        {{$publishedEvent := dbGet 5001 (joinStr "_" $eventID $ownerID)}}
 
-            {{if gt (len (str $publishedEvent.ID)) 0}}
-                {{$publishedChannel := dbGet 5000 (joinStr "_" $eventID $ownerID)}}
-                {{deleteAllMessageReactions $publishedChannel.Value $publishedEvent.Value}}
-                {{dbDel 5010 $eventID}}
-                {{execCC $publishEventCustomCommandID nil 0 (sdict "creatorID" $creatorID "eventID" $eventID )}}
-            {{end}}
+        {{if gt (len (str $publishedEvent.ID)) 0}}
+            {{$publishedChannel := dbGet 5000 (joinStr "_" $eventID $ownerID)}}
+            {{deleteAllMessageReactions $publishedChannel.Value $publishedEvent.Value}}
+            {{dbDel 5010 $eventID}}
+            {{dbSet (sub $id 1) (joinStr "_" $eventID $ownerID) $gameRoles.Value}}
+
+            {{execCC $publishEventCustomCommandID nil 0 (sdict "creatorID" $ownerID "eventID" $eventID )}}
         {{end}}
         {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventExists.Value "`\n**Game:**\n```" $content "\n```")}}
     {{else}}

@@ -4,19 +4,20 @@
     (carg "string" "class description")
 }}
 
-{{$id := 4992}}
+{{$classID := 4992}}
+{{$descriptionID := 4993}}
 {{$class := ($args.Get 0)}}
 {{$emoteID := (toInt64 ($args.Get 1))}}
 {{$description := ($args.Get 2)}}
-{{$key := (joinStr "_" "class" $class)}}
+{{$key := $class}}
 
-{{$classExists := (dbGet  4992 $key)}}
+{{$classExists := (dbGet $classID $key)}}
 {{$failedAccessMsg :=  (joinStr "" "A class with **NAME:** `" $class "` ___already exist___ **or** you  ___cannot add/edit classes___.")}}
 {{$organizerID := (toInt64 (dbGet 4999 "organizerID").Value)}}
 
 {{if hasRoleID $organizerID}}
-    {{dbSet 4992 $key (joinStr "" $emoteID)}}
-    {{dbSet 4993 $emoteID (joinStr " " $key $description)}}
+    {{dbSet $classID $key (joinStr "" $emoteID)}}
+    {{dbSet $descriptionID $emoteID $description}}
     {{$icon := ""}}
     {{if gt $emoteID 0}}
         {{$icon = (joinStr "" "<:" $class ":" $emoteID ">")}}{{end}}

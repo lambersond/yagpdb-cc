@@ -1,10 +1,10 @@
-{{$notes := dbGetPattern 4992 "class_%" 100 0}}
+{{$notes := dbGetPattern 4992 "%" 100 0}}
 {{$classes := "**Class list for custom event game roles:**"}}
 
 {{range $notes}}
-    {{$className := slice .Key 6 (len .Key)}}
+    {{$className := .Key}}
     {{$classID := .Value }}
-    {{$classes = (joinStr "" $classes "\n<:" $className ":" $classID "> **" (upper $className) "**" )}}
+    {{$classes = (joinStr "" $classes "\n<:" $className ":" $classID "> **" $className "**" )}}
 {{end}}
 
 {{sendDM (joinStr "" $classes)}}

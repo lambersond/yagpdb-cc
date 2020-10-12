@@ -3,17 +3,17 @@
     (carg "int" "emoteID")
 }}
 
-{{$id := 4991}}
+{{$roleID := 4991}}
 {{$role := ($args.Get 0)}}
 {{$emoteID := (toInt64 ($args.Get 1))}}
-{{$key := (joinStr "" "role_" $role)}}
+{{$key := $role}}
 
-{{$roleExists := (dbGet $id $key)}}
+{{$roleExists := (dbGet $roleID $key)}}
 {{$failedAccessMsg :=  (joinStr "" "A role with **NAME:** `" $role "` ___already exist___ **or** you  ___cannot add/edit roles___.")}}
 {{$organizerID := (toInt64 (dbGet 4999 "organizerID").Value)}}
 
 {{if hasRoleID $organizerID}}
-    {{dbSet $id $key (joinStr "" $emoteID)}}
+    {{dbSet $roleID $key (joinStr "" $emoteID)}}
     {{$icon := ""}}
     {{if gt $emoteID 0}}
         {{$icon = (joinStr "" "<:" $role ":" $emoteID ">")}}{{end}}

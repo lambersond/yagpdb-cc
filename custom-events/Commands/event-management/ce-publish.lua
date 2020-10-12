@@ -10,7 +10,7 @@
     {{$userID = (toInt64 .ExecData.creatorID)}}
     {{$eventID = (toInt64 .ExecData.eventID)}}
 {{else}}
-    {{deleteTrigger 60}}
+    {{deleteTrigger 0}}
 {{end}}
 
 {{$publishingChannelID := (joinStr "" (dbGet 5000 (joinStr "_" $eventID $userID)).Value)}}
@@ -27,15 +27,17 @@
     {{end}}
 {{end}}
 {{$attending := 0 }}
-{{ if le (toInt $participantMax) 0 }} {{$attending = $participantCount}}
-    {{ else }}	{{$attending = (joinStr "/" $participantCount $participantMax)}}
+{{ if le (toInt $participantMax) 0 }}
+    {{$attending = $participantCount}}
+{{ else }}
+    {{$attending = (joinStr "/" $participantCount $participantMax)}}
 {{end}}
 {{$eDate := (joinStr "" (dbGet 5006 (joinStr "_" $eventID $userID)).Value)}}
 {{$eTime := (joinStr "" (dbGet 5007 (joinStr "_" $eventID $userID)).Value)}}
 
 {{$game := (joinStr "" (dbGet 5009 (joinStr "_" $eventID $userID)).Value)}}
-{{$gameIcon :=  (joinStr "" (dbGet 4990 (joinStr "_" "game" $game)).Value)}}
-{{$gameRoles := (dbGet 4990 $game).Value }}
+{{$gameIcon :=  (joinStr "" (dbGet 4990 $game).Value)}}
+{{$gameRoles := (dbGet 4994 $game).Value }}
 {{$fields := (cslice
         (sdict "value" (joinStr "" "<:attending:744705141328052224> **" $attending "**" "") "name" $blankValue "inline" true)
         (sdict "value" (joinStr "" "<:calendar2:744706382275543111> **" $eDate "**" "") "name" $blankValue "inline" true)
@@ -62,7 +64,7 @@
             {{$entry := split . "_"}}
             {{if eq (index $entry 0) $roleName}}
                 {{$uClass := (index $entry 2)}}
-                {{$classIconID := (dbGet 4992 (joinStr "_" "class" $uClass)).Value}}
+                {{$classIconID := (dbGet 4992 $uClass).Value}}
                 {{$userEntry := ""}}
                 {{if not (eq (toInt64 $classIconID) 0)}}
                     {{$userEntry = (joinStr "" "<:" $uClass ":" $classIconID "> ")}}
@@ -102,17 +104,23 @@
 }}
 
 {{if gt (toInt64 $publishedEventID) 0}}
-    {{editMessageNoEscape nil $publishedEventID (complexMessageEdit "embed" $embed)}}
+    {{editMessageNoEscape $publishingChannelID $publishedEventID (complexMessageEdit "embed" $embed)}}
+    {{$msg := getMessage $publishingChannelID $publishedEventID}}
+
+    {{if eq (len $msg.Reactions) 0}}
+        {{range $gameRoles}}
+            {{$roleDB := dbGet 4991 .}}
+            {{addMessageReactions $publishingChannelID $publishedEventID (joinStr ":" $roleDB.Key $roleDB.Value )}}
+        {{end}}
+    {{end}}
 {{else}}
     {{$mID := sendMessageNoEscapeRetID nil $embed}}
 
     {{range $gameRoles}}
-        {{$roleDB := dbGet 4991 (joinStr "_" "role" .)}}
-        {{$roleName := slice $roleDB.Key 5 (len $roleDB.Key)}}
-        {{addMessageReactions nil $mID (joinStr ":" $roleName $roleDB.Value )}}
+        {{$roleDB := dbGet 4991 .}}
+        {{addMessageReactions nil $mID (joinStr ":" $roleDB.Key $roleDB.Value )}}
     {{end}}
 
-    {{/* dbSet 5010 $eventID "" */}}
     {{dbSet 5001 (joinStr "_" $eventID $userID) (joinStr "" $mID)}}
     {{dbSet 5011 $mID (joinStr "" $eventID)}}
 {{end}}

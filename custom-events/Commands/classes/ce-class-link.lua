@@ -10,12 +10,15 @@
 {{$organizerID := (toInt64 (dbGet 4999 "organizerID").Value)}}
 {{$link := "true"}}
 {{$errors := ""}}
+{{$gameID := 4990}}
+{{$roleID := 4991}}
+{{$classID := 4992}}
+{{$linkGameRoleToClassID := 4995}}
 
-{{$availableClassesDB := dbGetPattern 4992 "class_%" 100 0}}
+{{$availableClassesDB := dbGetPattern $classID "%" 100 0}}
 {{$availableClasses := ""}}
 {{range $availableClassesDB}}
-    {{$class := slice .Key 6 (len .Key)}}
-    {{$availableClasses = (joinStr " " $availableClasses $class)}}
+    {{$availableClasses = (joinStr " " $availableClasses .Key)}}
 {{end}}
 {{$availableClasses := split $availableClasses " "}}
 {{$classesToAddPretty := ""}}
@@ -30,14 +33,14 @@
     {{end}}
 {{end}}
 
-{{$roleExists := dbGet 4991 (joinStr "_" "role" $role)}}
-{{if not (eq $roleExists.Key (joinStr "_" "role" $role))}}
+{{$roleExists := dbGet $roleID $role}}
+{{if eq (len (str $roleExists.ID)) 0}}
     {{$link = "false"}}
     {{$errors = (joinStr "" $errors "\nRole `" $role "` not found.")}}
 {{end}}
 
-{{$gameExists := dbGet 4990 (joinStr "_" "game" $game)}}
-{{if not (eq (joinStr "" $gameExists.Key) (joinStr "_" "game" $game))}}
+{{$gameExists := dbGet $gameID $game}}
+{{if eq (len (str $gameExists.ID)) 0}}
     {{$link = "false"}}
     {{$errors = (joinStr "" $errors "\nGame `" $game "` not found.")}}
 {{end}}
@@ -48,7 +51,7 @@
 {{end}}
 
 {{if eq $link "true"}}
-    {{dbSet 4991 (joinStr "_" $game $role) $classesToAdd}}
+    {{dbSet $linkGameRoleToClassID (joinStr "_" $game $role) $classesToAdd}}
     {{sendDM (joinStr "" "\nClasses linked to the role `" $role "` for the game: `" $game "`\nClasses added: `" $classesToAddPretty "`")}}
 {{else}}
     {{sendDM $errors}}

@@ -10,8 +10,10 @@
 **Title:** {{(dbGet 5002 (joinStr "_" $mID $uID)).Value}}
 **Description:** {{(dbGet 5003 (joinStr "_" $mID $uID)).Value}}
 **Max Participants:** {{(dbGet 5004 (joinStr "_" $mID $uID)).Value}}
-**Participant List:** {{(dbGet 5010 (str "" $mID)).Value}}
+**Participant List:** {{(dbGet 5010 (str $mID)).Value}}
 **Date:** {{(dbGet 5006 (joinStr "_" $mID $uID)).Value}}
 **Time:** {{(dbGet 5007 (joinStr "_" $mID $uID)).Value}}
 **Game:** {{(dbGet 5009 (joinStr "_" $mID $uID)).Value}}
 **Game Roles:** {{(dbGet 5008 (joinStr "_" $mID $uID)).Value}}
+
+{{deleteTrigger 0}}

@@ -30,57 +30,56 @@
             {{else}}
                 {{/* Delete old role emoji and update participant list for new role */}}
                 {{$oldRole := index (split $participant "_") 0}}
-                {{$oldRoleID :=  (dbGet 4991 (joinStr "_" "role" $oldRole)).Value}}
+                {{$oldRoleID :=  (dbGet 4991 $oldRole).Value}}
                 {{deleteMessageReaction nil $msgID $attendeeID (joinStr ":" $oldRole $oldRoleID)}}
                 {{$participantList = reReplace $participant $participantList (joinStr "_" $reaction.Emoji.Name .User.ID "")}}
+            {{end}}
 
-                {{/* Check if game role has classes assigned */}}
-                {{$gameName := (dbGet 5009 (joinStr "_" $msgID $creatorID)).Value}}
-                {{$classRoles := cslice}}
-                {{$classes := dbGet 4991 (joinStr "_" $gameName $reaction.Emoji.Name)}}
-                {{if gt (len (str $classes.ID)) 0}}
-                    {{$classRoles = $classes.Value}}
+            {{/* Check if game role has classes assigned */}}
+            {{$gameName := (dbGet 5009 (joinStr "_" $eventID $creatorID)).Value}}
+            {{$classRoles := cslice}}
+            {{$classes := dbGet 4995 (joinStr "_" $gameName $reaction.Emoji.Name)}}
+            {{if gt (len (str $classes.ID)) 0}}
+                {{$classRoles = $classes.Value}}
+            {{end}}
+
+            {{/* Send message to get attendees class */}}
+            {{if gt (len $classRoles) 0}}
+                {{$publish = false}}
+                
+                {{/* Build message for class request */}}
+                {{$description := (joinStr "" "Choose one of the following classes that fit the " $reaction.Emoji.Name " role.\n\n")}}
+                {{range $classRoles}}
+                    {{$class := dbGet 4992 .}}
+                    {{$classDetails := (dbGet 4993 $class.Value)}}
+                    {{$description = (joinStr "" $description "<:" . ":" $classDetails.Key "> | " $classDetails.Value "\n")}}
+                {{end}}
+                {{ $embed := cembed
+                    "title" (joinStr "`" "Choose a class to play for role, " $reaction.Emoji.Name " with the game: " $gameName ".")
+                    "description" (joinStr "" "**Info:**" $description)
+                    "timestamp" currentTime
+                    "author" (sdict "name" (joinStr "" .User.Username "#" .User.Discriminator) "url" "" "icon_url" (.User.AvatarURL "512"))
+                }}
+
+                {{/* Remove old request from db */}}
+                {{$userClassRequests := dbGetPattern 5012 (joinStr "_" "%" .User.ID) 10 0}}
+                {{range $userClassRequests}}
+                    {{$id := index (split .Key "_") 0}}
+                    {{if gt (toInt64 $id) 0}} 
+                        {{deleteMessage nil $id 0}}
+                        {{dbDelByID 5012 .ID}}
+                    {{end}}
                 {{end}}
 
-                {{/* Send message to get attendees class */}}
-                {{if gt (len $classRoles) 0}}
-                    {{$publish = false}}
-                    
-                    {{/* Build message for class request */}}
-                    {{$description := (joinStr "" "Choose one of the following classes that fit the " $reaction.Emoji.Name " role.\n\n")}}
-                    {{range $classRoles}}
-                        {{$class := dbGet 4992 (joinStr "_" "class" .)}}
-                        {{$classDetails := (dbGet 4993 $class.Value).Value}}
-                        {{$classDescription := (reReplace $class.Key (str $classDetails) "")}}
-                        {{$description = (joinStr "" $description "<:" . ":" $class.Value "> | " $classDescription "\n")}}
-                    {{end}}
-                    {{ $embed := cembed
-                        "title" (joinStr "`" "Choose a class to play for role, " $reaction.Emoji.Name " with the game: " $gameName ".")
-                        "description" (joinStr "" "**Info:**" $description)
-                        "timestamp" currentTime
-                        "author" (sdict "name" (joinStr "" .User.Username "#" .User.Discriminator) "url" "" "icon_url" (.User.AvatarURL "512"))
-                    }}
-
-                    {{/* Remove old request from db */}}
-                    {{$userClassRequests := dbGetPattern 5012 (joinStr "_" "%" .User.ID) 10 0}}
-                    {{range $userClassRequests}}
-                        {{$id := index (split .Key "_") 0}}
-                        {{if gt (toInt64 $id) 0}} 
-                            {{deleteMessage nil $id 0}}
-                            {{dbDelByID 5012 .ID}}
-                        {{end}}
-                    {{end}}
-
-                    {{/* Send message and add classes as reactions */}}
-                    {{$classMsgID := sendMessageNoEscapeRetID nil $embed}}
-                    {{range $classRoles}}
-                        {{ $classID := (dbGet 4992 (joinStr "_" "class" .)).Value }}
-                        {{addMessageReactions nil $classMsgID (joinStr ":" . $classID )}}
-                    {{end}}
-
-                    {{dbSetExpire 5012 (joinStr "_" $classMsgID .User.ID) (joinStr "_" $reaction.Emoji.Name $msgID) 3600}}
-                    {{deleteMessage nil $classMsgID 3600}}
+                {{/* Send message and add classes as reactions */}}
+                {{$classMsgID := sendMessageNoEscapeRetID nil $embed}}
+                {{range $classRoles}}
+                    {{ $classID := (dbGet 4992 .).Value }}
+                    {{addMessageReactions nil $classMsgID (joinStr ":" . $classID )}}
                 {{end}}
+
+                {{dbSetExpire 5012 (joinStr "_" $classMsgID .User.ID) (joinStr "_" $reaction.Emoji.Name $msgID) 3600}}
+                {{deleteMessage nil $classMsgID 3600}}
             {{end}}
         {{else}}
             {{deleteMessageReaction nil $msgID $attendeeID (joinStr ":" $reaction.Emoji.Name $reaction.Emoji.ID)}}
@@ -92,7 +91,7 @@
             {{end}}
         {{end}}
         {{dbSet 5010 $eventID (reReplace " $" (reReplace " {2,}" $participantList " ") "")}}
-        {{if eq $publish "true"}}
+        {{if eq (str $publish) "true"}}
             {{execCC $publishEventCustomCommandID nil 0 (sdict "creatorID" $creatorID "eventID" $eventID)}}
         {{end}}
     {{end}}

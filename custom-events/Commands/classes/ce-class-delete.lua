@@ -1,16 +1,16 @@
 {{$args := parseArgs 1 "Syntax is: -ce-class-delete <class>"
     (carg "string" "class")
 }}
-{{$id := 4992}}
+{{$classID := 4992}}
 {{$class := ($args.Get 0)}}
-{{$key := (joinStr "_" "class" $class)}}
+{{$key := $class}}
 
-{{$classExists := (dbGet $id $key)}}
+{{$classExists := (dbGet $classID $key)}}
 {{$failedAccessMsg :=  (joinStr "" "A class with **NAME:** `" $class "` ___does not exist___ **or** you ___cannot delete " $class "___.")}}
 {{$organizerID := (toInt64 (dbGet 4999 "organizerID").Value)}}
 
 {{if hasRoleID $organizerID}}
-    {{dbDel $id $key}}
+    {{dbDel $classID $key}}
     {{sendDM (joinStr "" "\nClass Deleted!\n\n**Class Name:** `" $class "`" )}}
 {{else}}
     {{sendDM $failedAccessMsg}}
