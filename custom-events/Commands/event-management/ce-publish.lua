@@ -103,7 +103,7 @@
     "fields" $fields
 }}
 
-{{if and (not (eq $eDate "dd-MMM-YYYY")) (not (eq $eTime "00:00"))}}
+{{if not (eq $eDate "dd-MMM-YYYY")}}
     {{if gt (toInt64 $publishedEventID) 0}}
         {{editMessageNoEscape $publishingChannelID $publishedEventID (complexMessageEdit "embed" $embed)}}
         {{$msg := getMessage $publishingChannelID $publishedEventID}}

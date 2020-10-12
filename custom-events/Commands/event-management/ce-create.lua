@@ -2,9 +2,6 @@
     (carg "channel" "channel")
 }}
 
-{{$helpNotes := "\n\n**EVENT CREATION COMMANDS:**\n\n*___Title:___* `-event-title <eventID> <text>`  ---> `-event-title 1234567890 Event title for awesome event`\n\n*___Description:___* `-event-description <eventID> <text>`  ---> `-event-description 1234567890 description for event. can include markdown and stuff`\n\n*___Max Participants (default indefinite):___* `-event-max <eventID> <int>`  ---> `-event-max 1234567890 10`\n\n*___Date:___* `-event-date <eventID> <dd-MMM-YYYY>`  ---> `-event-date 1234567890 25-dec-2020`\n\n*___Time (24h):___* `-event-time <eventID> <hh:mm>`  ---> `-event-time 1234567890 20:30`\n\n*___Game:___* `-event-game <eventID> <game>`  ---> `-event-game 1234567890 neverwinter`\n\n*___Channel (if it needs changed):___* `-event-channel <eventID> <channel>`  ---> `-event-channel 1234567890 #channel-name-new`"}}
-{{$addNotes := "\n\n\n**When you're ready to post event,** `-publish-event 1234567890`\n\nIf a one of the following fields needs updated after event is published. Update the field and run the publish command again.\n\n\n\n"}}
-
 {{$channelID := .Message.ChannelID}}
 
 {{ if $args.IsSet 0}}
@@ -12,7 +9,23 @@
 {{end}}
 
 {{.User.Mention}}, you have begun the creation process for a new event in here, <#{{$channelID}}>! I have messaged you some important information.
-{{sendDM (joinStr "" "\nYour event ID is `" .Message.ID "` do not lose this! It is needed to configure the event!\n\nThe event will be posted in: <#" $channelID ">" $helpNotes $addNotes )}}
+
+{{$fields := cslice (sdict "name" "**ce-delete**" "value" (joinStr "" "Required Args (**1**) EventID. Remove all instances of the event from the database. Ex. `-ce-delete " .Message.ID "`") "inline" false)}}
+{{$fields = $fields.Append (sdict "name" "**ce-publish**" "value" (joinStr "" "Required Args (**1**) EventID. Posts the event message. Ex. `-ce-publish " .Message.ID "`") "inline" false)}}
+{{$fields = $fields.Append (sdict "name" "**ce-title**" "value" (joinStr "" "Required Args (**2**) EventID & title. **Title** can be wrapped in quotes or not. Ex. `-ce-title " .Message.ID " My far out title!`") "inline" false)}}
+{{$fields = $fields.Append (sdict "name" "**ce-description**" "value" (joinStr "" "Required Args (**2**) EventID & description. **Description** can be wrapped in quotes or not. Supports Markdown. Ex. `-ce-description " .Message.ID " This event will be out of this galaxy!`") "inline" false)}}
+{{$fields = $fields.Append (sdict "name" "**ce-max**" "value" (joinStr "" "Required Args (**2**) EventID & max. **Max** is an whole number greater than 0. Puts a limit of attendees on event. The event will hold more participants, but will only show up to the max. Default: no limit (0). Ex. `-ce-max " .Message.ID " 5`") "inline" false)}}
+{{$fields = $fields.Append (sdict "name" "**ce-date**" "value" (joinStr "" "Required Args (**2**) EventID & date. _**Date** is required to publish event_. It is in a `dd-MMM-YYYY` format.  Ex. `-ce-date " .Message.ID " 01-JAN-2025`") "inline" false)}}
+{{$fields = $fields.Append (sdict "name" "**ce-time**" "value" (joinStr "" "Required Args (**2**) EventID & time. _**Time** is a  24h `hh:mm` format. The timezone link also defaults to GMT-4.  Ex. `-ce-delete " .Message.ID " 17:30`") "inline" false)}}
+{{$fields = $fields.Append (sdict "name" "**ce-game**" "value" "Required Args (**2**) EventID & game. **Game** is the game or system the event gets it's roles and classes from. To see a list of avaiable games on your server run `-ce-game-list`" "inline" false)}}
+{{$fields = $fields.Append (sdict "name" "**ce-help**" "value" "Help documentation. Ex. `-ce-help`" "inline" false)}}
+
+{{ $embed := cembed
+    "title" (joinStr "" .User.Username ", you've created a new custom event!\n")
+    "description" (joinStr "" "The **eventID** for this event is `" .Message.ID "`")
+    "timestamp" currentTime
+    "fields"  $fields
+}}
 
 {{dbSet 4999 .Message.ID (joinStr "" .User.ID)}}
 {{dbSet 5000 (joinStr "_" .Message.ID .User.ID) (joinStr "" $channelID)}}
@@ -24,5 +37,6 @@
 {{dbSet 5008 (joinStr "_" .Message.ID .User.ID) (cslice "Yes" "No")}}
 {{dbSet 5009 (joinStr "_" .Message.ID .User.ID) "default"}}
 
+{{sendDM (cembed $embed)}}
 {{deleteTrigger 0}}
 {{deleteResponse 60}}
