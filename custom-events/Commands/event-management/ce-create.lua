@@ -16,7 +16,6 @@
 
 {{dbSet 4999 .Message.ID (joinStr "" .User.ID)}}
 {{dbSet 5000 (joinStr "_" .Message.ID .User.ID) (joinStr "" $channelID)}}
-{{dbSet 5001 (joinStr "_" .Message.ID .User.ID) "empty"}}
 {{dbSet 5002 (joinStr "_" .Message.ID .User.ID) (joinStr "" "Custom Event!")}}
 {{dbSet 5003 (joinStr "_" .Message.ID .User.ID) ""}}
 {{dbSet 5004 (joinStr "_" .Message.ID .User.ID) 0}}

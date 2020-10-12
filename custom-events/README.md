@@ -28,7 +28,7 @@ Database
 |5007|"EventID_OwnerID"|Time|Time in 24h format|
 |5008|"EventID_OwnerID"|Roles|Auto determined by 5009|
 |5009|"EventID_OwnerID"|Game|game for event--default:default|
-|5010|"EventID_OwnerID"|ParticipantList|List of all participants with their role and class|
+|5010|"EventID"|ParticipantList|List of all participants with their role and class|
 |5011|"MessageID"|EventID|Used to manage joining/leaving event|
 |5012|"ClassMessageID_ParticipantID"|ClassName_ClassMessageID|Used if there are classes to choose from--TTL 10m|
 

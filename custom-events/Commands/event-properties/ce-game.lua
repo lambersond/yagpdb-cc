@@ -1,19 +1,25 @@
+{{/* CONFIGURATION - YOUR_CC_ID */}}
+{{$publishEventCustomCommandID := 31}}
+
 {{$args := parseArgs 2 "Syntax is: -ce-game <eventID> <game>"
     (carg "string" "event Id")
     (carg "string" "game")
 }}
 
 {{$id := 5009}}
-{{$key := (joinStr "_" ($args.Get 0) (.User.ID))}}
+{{$eventID := $args.Get 0}}
+{{$ownerID := .User.ID}}
+{{$key := (joinStr "_" $eventID $ownerID)}}
 
 {{$content := (joinStr " " (slice .CmdArgs 1))}}
-{{$eventExists := (dbGet 4999 ($args.Get 0))}}
-{{$failedAccessMsg :=  (joinStr "" "An event with **ID:** `" ($args.Get 0) "` ___does not exist___ **or** you  ___do not have access___ to it.")}}
+{{$eventExists := (dbGet 4999 $eventID)}}
+{{$failedAccessMsg :=  (joinStr "" "An event with **ID:** `" $eventID "` ___does not exist___ **or** you  ___do not have access___ to it.")}}
 {{$organizerID := (toInt64 (dbGet 4999 "organizerID").Value)}}
 {{$hasCorrectPerms := "false"}}
 
-{{if or (eq (toInt64 $eventExists.Value) .User.ID) (hasRoleID $organizerID)}}
+{{if or (eq (toInt64 $eventExists.Value) $ownerID) (hasRoleID $organizerID)}}
     {{$hasCorrectPerms = "allowed"}}
+    {{$ownerID = $eventExists.Value}}
 {{end}}
 
 {{$gameExists := (dbGet 4990 (joinStr "" "game_" $content)).Key}}
@@ -23,7 +29,15 @@
     {{ if eq (str $gameExists) (joinStr "" "game_" $content)}}
         {{dbSet $id $key $content}}
         {{if gt (len (str $gameRoles.ID)) 0}}
-            {{dbSet (sub $id 1) (joinStr "" ($args.Get 0) "_" (.User.ID) "_roles") $gameRoles.Value}}
+            {{dbSet (sub $id 1) (joinStr "_" $eventID $ownerID) $gameRoles.Value}}
+            {{$publishedEvent = dbGet 5001 (joinStr "_" $eventID $ownerID)}}
+
+            {{if gt (len (str $publishedEvent.ID)) 0}}
+                {{$publishedChannel := dbGet 5000 (joinStr "_" $eventID $ownerID)}}
+                {{deleteAllMessageReactions $publishedChannel.Value $publishedEvent.Value}}
+                {{dbDel 5010 $eventID}}
+                {{execCC $publishEventCustomCommandID nil 0 (sdict "creatorID" $creatorID "eventID" $eventID )}}
+            {{end}}
         {{end}}
         {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventExists.Value "`\n**Game:**\n```" $content "\n```")}}
     {{else}}

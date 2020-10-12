@@ -13,7 +13,7 @@
     {{$creatorID := (dbGet 4999 $eventID).Value}}
     {{$channelID := $reaction.ChannelID}}
     {{$attendeeID := .User.ID}}
-    {{$allowedRolesForEvent := (dbGet 5008 (joinStr "_" $eventID $creatorID "roles")).Value}}
+    {{$allowedRolesForEvent := (dbGet 5008 (joinStr "_" $eventID $creatorID)).Value}}
 
     {{if not (inFold $allowedRolesForEvent $reaction.Emoji.Name)}}
         {{deleteMessageReaction nil $msgID $attendeeID (joinStr ":" $reaction.Emoji.Name $reaction.Emoji.ID)}}
@@ -35,7 +35,7 @@
                 {{$participantList = reReplace $participant $participantList (joinStr "_" $reaction.Emoji.Name .User.ID "")}}
 
                 {{/* Check if game role has classes assigned */}}
-                {{$gameName := (dbGet 5009 (joinStr "_" $msgID $creatorID "game")).Value}}
+                {{$gameName := (dbGet 5009 (joinStr "_" $msgID $creatorID)).Value}}
                 {{$classRoles := cslice}}
                 {{$classes := dbGet 4991 (joinStr "_" $gameName $reaction.Emoji.Name)}}
                 {{if gt (len (str $classes.ID)) 0}}
