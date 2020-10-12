@@ -24,7 +24,7 @@
 
 {{if and (not (eq (toInt64 $eventExists.Value) 0)) (eq $hasCorrectPerms "allowed")}}
     {{dbSet $id $key $content}}
-    {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventExists.Value "`\n**Description:**\n```" $content "\n```")}}
+    {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventID "`\n**Description:**\n```" $content "\n```")}}
 
     {{$publishedEvent := dbGet 5001 (joinStr "_" $eventID $ownerID)}}
     {{if gt (len (str $publishedEvent.ID)) 0}}

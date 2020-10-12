@@ -40,7 +40,7 @@
 
             {{execCC $publishEventCustomCommandID nil 0 (sdict "creatorID" $ownerID "eventID" $eventID )}}
         {{end}}
-        {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventExists.Value "`\n**Game:**\n```" $content " [" $game "]\n```")}}
+        {{sendDM (joinStr "" "\nEvent Updated!\n\n**EventID:**`" $eventID "`\n**Game:**\n```" $content " [" $game "]\n```")}}
     {{else}}
         {{sendDM (joinStr "" "Game type " $content " [" $game "] does not exist. See all available games with `-ce-game-list`")}}
     {{end}}
