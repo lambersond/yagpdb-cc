@@ -103,24 +103,28 @@
     "fields" $fields
 }}
 
-{{if gt (toInt64 $publishedEventID) 0}}
-    {{editMessageNoEscape $publishingChannelID $publishedEventID (complexMessageEdit "embed" $embed)}}
-    {{$msg := getMessage $publishingChannelID $publishedEventID}}
+{{if and (not (eq $eDate "dd-MMM-YYYY")) (not (eq $eTime "00:00"))}}
+    {{if gt (toInt64 $publishedEventID) 0}}
+        {{editMessageNoEscape $publishingChannelID $publishedEventID (complexMessageEdit "embed" $embed)}}
+        {{$msg := getMessage $publishingChannelID $publishedEventID}}
 
-    {{if eq (len $msg.Reactions) 0}}
+        {{if eq (len $msg.Reactions) 0}}
+            {{range $gameRoles}}
+                {{$roleDB := dbGet 4991 .}}
+                {{addMessageReactions $publishingChannelID $publishedEventID (joinStr ":" $roleDB.Key $roleDB.Value )}}
+            {{end}}
+        {{end}}
+    {{else}}
+        {{$mID := sendMessageNoEscapeRetID $publishingChannelID $embed}}
+
         {{range $gameRoles}}
             {{$roleDB := dbGet 4991 .}}
-            {{addMessageReactions $publishingChannelID $publishedEventID (joinStr ":" $roleDB.Key $roleDB.Value )}}
+            {{addMessageReactions $publishingChannelID $mID (joinStr ":" $roleDB.Key $roleDB.Value )}}
         {{end}}
+
+        {{dbSet 5001 (joinStr "_" $eventID $userID) (joinStr "" $mID)}}
+        {{dbSet 5011 $mID (joinStr "" $eventID)}}
     {{end}}
 {{else}}
-    {{$mID := sendMessageNoEscapeRetID $publishingChannelID $embed}}
-
-    {{range $gameRoles}}
-        {{$roleDB := dbGet 4991 .}}
-        {{addMessageReactions $publishingChannelID $mID (joinStr ":" $roleDB.Key $roleDB.Value )}}
-    {{end}}
-
-    {{dbSet 5001 (joinStr "_" $eventID $userID) (joinStr "" $mID)}}
-    {{dbSet 5011 $mID (joinStr "" $eventID)}}
+    {{sendDM "The Date & Time must be set before publishing event!"}}
 {{end}}
