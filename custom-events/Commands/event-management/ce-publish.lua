@@ -114,11 +114,11 @@
         {{end}}
     {{end}}
 {{else}}
-    {{$mID := sendMessageNoEscapeRetID nil $embed}}
+    {{$mID := sendMessageNoEscapeRetID $publishingChannelID $embed}}
 
     {{range $gameRoles}}
         {{$roleDB := dbGet 4991 .}}
-        {{addMessageReactions nil $mID (joinStr ":" $roleDB.Key $roleDB.Value )}}
+        {{addMessageReactions $publishingChannelID $mID (joinStr ":" $roleDB.Key $roleDB.Value )}}
     {{end}}
 
     {{dbSet 5001 (joinStr "_" $eventID $userID) (joinStr "" $mID)}}
