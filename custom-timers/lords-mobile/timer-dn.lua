@@ -1,5 +1,5 @@
 {{$args := parseArgs 2 ""
-  (carg "duration" "countdown-duration")
+  (carg "duration" "countdown-until")
   (carg "string" "countdown-title")
 }}
 
@@ -25,5 +25,5 @@
 }}
 
 {{$mID := sendMessageNoEscapeRetID nil (complexMessage "content" "" "embed" $embed)}}
-{{execCC $ccID nil 0 (sdict "MessageID" $mID "T" $t "Title" $title "Description" $description "Username" $username "Avatar" $avatar "url" $imageUrl "color" $color "thumbnail" $thumbnail)}}
+{{execCC $ccID nil 0 (sdict "MessageID" $mID "T" $t "D" $t "Title" $title "Description" $description "Username" $username "Avatar" $avatar "url" $imageUrl "color" $color "thumbnail" $thumbnail)}}
 {{deleteTrigger 0}}

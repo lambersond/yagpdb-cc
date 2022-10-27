@@ -1,6 +1,7 @@
 {{$args := parseArgs 2 ""
-  (carg "duration" "countdown-duration")
+  (carg "duration" "countdown-until")
   (carg "role" "countdown-role")
+  (carg "string" "countdown-duration")
 }}
 
 {{$ccID := YOUR-TIMER-EXEC-CUSTOM-COMMAND-ID-HERE}}
@@ -13,6 +14,7 @@
 {{$imageUrl := ""}}
 
 {{$t := currentTime.Add ($args.Get 0)}}
+{{$d := $t.Add (toDuration (or ($args.Get 3) "0m"))}}
 {{$embed := cembed
   "title" $title
   "description" $description
@@ -25,5 +27,5 @@
 }}
 
 {{$mID := sendMessageNoEscapeRetID nil (complexMessage "content" (mentionRoleID ($args.Get 1).ID) "embed" $embed)}}
-{{execCC $ccID nil 0 (sdict "MessageID" $mID "T" $t "Title" $title "Description" $description "Username" $username "Avatar" $avatar "url" $imageUrl "color" $color "thumbnail" $thumbnail)}}
+{{execCC $ccID nil 0 (sdict "MessageID" $mID "T" $t "D" $d "Title" $title "Description" $description "Username" $username "Avatar" $avatar "url" $imageUrl "color" $color "thumbnail" $thumbnail)}}
 {{deleteTrigger 0}}
