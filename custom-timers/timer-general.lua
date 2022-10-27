@@ -16,7 +16,7 @@
 {{$thumbnail := ""}}
 
 {{$t := currentTime.Add ($args.Get 0)}}
-{{$d := $t.Add (toDuration (or ($args.Get 5) "0m"))}}
+{{$d := $t.Add (toDuration (or ($args.Get 4) "0m"))}}
 
 {{$embed := cembed
   "title" $title

@@ -14,7 +14,7 @@
 {{$imageUrl := "https://cdn.discordapp.com/embed/avatars/0.png"}}
 
 {{$t := currentTime.Add ($args.Get 0)}}
-{{$d := $t.Add (toDuration (or ($args.Get 3) "0m"))}}
+{{$d := $t.Add (toDuration (or ($args.Get 2) "0m"))}}
 
 {{$embed := cembed
   "title" $title
